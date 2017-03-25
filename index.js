@@ -15,25 +15,34 @@ var mainState = {
         this.player = game.add.sprite(32, 32, 'player');this.player.scale.setTo(0.5,0.5); //add and rescale
         this.cursor = game.input.keyboard.createCursorKeys(); //cursor object to detect key presses
 
+        this.wasd = {
+              up: game.input.keyboard.addKey(Phaser.Keyboard.W),
+              down: game.input.keyboard.addKey(Phaser.Keyboard.S),
+              left: game.input.keyboard.addKey(Phaser.Keyboard.A),
+              right: game.input.keyboard.addKey(Phaser.Keyboard.D),
+        };
+
 
     },
     update: function() {
         //setting initial speed and moving speed
-        var speed = 250;//moving speed
+        var speed = 322;//moving speed
         this.player.body.velocity.y = 0;
         this.player.body.velocity.x = 0;
 
-        if(this.cursor.up.isDown) {
+        if(game.input.keyboard.isDown(Phaser.Keyboard.W)) {
             this.player.body.velocity.y -= speed;
-        } else if (this.cursor.down.isDown) {
+        } else if (game.input.keyboard.isDown(Phaser.Keyboard.S)) {
             this.player.body.velocity.y += speed;
         }
         
-        if(this.cursor.left.isDown) {
+        if(game.input.keyboard.isDown(Phaser.Keyboard.A)) {
             this.player.body.velocity.x -= speed;
-        } else if (this.cursor.right.isDown) {
+        } else if (game.input.keyboard.isDown(Phaser.Keyboard.D)) {
             this.player.body.velocity.x += speed;
         }
+
+        this.player.body.collideWorldBounds = true;
 
     }
 };
