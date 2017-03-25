@@ -1,6 +1,7 @@
 var game = new Phaser.Game(600,800);
-    
+
     var player;
+    var enemy1;
     var bullet; //bullets?
     var fireRate = 100;
     var nextFire = 0;
@@ -20,8 +21,10 @@ var mainState = {
         game.world.enableBody = true;
 
         player = game.add.sprite(300, 700, 'player');player.scale.setTo(0.5,0.5); //add and rescale
+        testEnemy = game.add.sprite(100, 200, 'player');testEnemy.scale.setTo(0.5,0.5); //add and rescale
 
         player.anchor.setTo(0.5,0.5);
+        game.physics.enable(player, Phaser.Physics.ARCADE);
         game.physics.enable(player, Phaser.Physics.ARCADE);
         player.body.allowRotation = false;
 
@@ -52,6 +55,8 @@ var mainState = {
         var speed = 322;//moving speed
         player.body.velocity.y = 0;
         player.body.velocity.x = 0;
+        testEnemy.body.velocity.y = 0;
+        testEnemy.body.velocity.x = 0;
 
         if(game.input.keyboard.isDown(Phaser.Keyboard.W)) {
             player.body.velocity.y -= speed;
@@ -67,11 +72,17 @@ var mainState = {
 
         player.body.collideWorldBounds = true;
 
-        if (game.input.activePointer.isDown)
-        {
+        if (game.input.activePointer.isDown) {
             fire();
         }
 
+        game.physics.arcade.overlap(bullets, enemy1, this.message);
+
+    },
+
+    message: function(enemy1, bullet) {
+        bullet.kill();
+        console.log("axax");
     }
 };
 
