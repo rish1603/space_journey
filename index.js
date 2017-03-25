@@ -12,7 +12,11 @@ var mainState = {
         game.physics.startSystem(Phaser.Physics.ARCADE); //setting physics type
         game.world.enableBody = true;
 
-        this.player = game.add.sprite(32, 32, 'player');this.player.scale.setTo(0.5,0.5); //add and rescale
+
+
+        this.player = game.add.sprite(300, 700, 'player');this.player.scale.setTo(0.5,0.5); //add and rescale
+       // second = entity('player', 400, 400, 100);
+
         this.player.anchor.setTo(0.5,0.5);
         // game.physics.enable(this.player, Phaser.Physics.ARCADE);
         this.player.body.allowRotation = false;
@@ -50,6 +54,14 @@ var mainState = {
 
     }
 };
+
+function entity(name, x, y, hp)
+{
+
+    game.add.sprite(x, y, name);this.scale.setTo(0.5,0.5); //add and rescale
+
+    return this;
+}
 
 game.state.add('main', mainState);
 game.state.start('main');
