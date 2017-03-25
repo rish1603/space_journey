@@ -15,12 +15,26 @@ var mainState = {
         this.player = game.add.sprite(32, 32, 'player');this.player.scale.setTo(0.5,0.5); //add and rescale
         this.cursor = game.input.keyboard.createCursorKeys(); //cursor object to detect key presses
 
-        var speed = 250;
-        this.player.body.velocity.y = 0;
-        this.player.body.velocity.x = 0;
 
     },
     update: function() {
+        //setting initial speed and moving speed
+        var speed = 250;//moving speed
+        this.player.body.velocity.y = 0;
+        this.player.body.velocity.x = 0;
+
+        if(this.cursor.up.isDown) {
+            this.player.body.velocity.y -= speed;
+        } else if (this.cursor.down.isDown) {
+            this.player.body.velocity.y += speed;
+        }
+        
+        if(this.cursor.left.isDown) {
+            this.player.body.velocity.x -= speed;
+        } else if (this.cursor.right.isDown) {
+            this.player.body.velocity.x += speed;
+        }
+
     }
 };
 
