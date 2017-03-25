@@ -82,6 +82,8 @@ function fire() {
         nextFire = game.time.now + fireRate;
         var bullet = bullets.getFirstDead();
         bullet.reset(player.x - 8, player.y - 8);
+        bullet.rotation = player.rotation + Math.PI / 2;
+        console.log(player.rotation);
         game.physics.arcade.moveToPointer(bullet, 430);
     }
 }
