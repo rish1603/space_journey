@@ -4,7 +4,7 @@ var mainState = {
 
     preload: function() { //for loading assets etc
         //load the main rocket image and save as 'player'
-        game.load.image('player', 'assets/PNG/Sprites/Ships/spaceShips_007.png'); 
+        game.load.image('player', 'assets/PNG/Sprites/Ships/spaceship.png'); 
     },
 
     create: function() {
@@ -13,27 +13,40 @@ var mainState = {
         game.world.enableBody = true;
 
         this.player = game.add.sprite(32, 32, 'player');this.player.scale.setTo(0.5,0.5); //add and rescale
+        this.player.anchor.setTo(0.5,0.5);
+        // game.physics.enable(this.player, Phaser.Physics.ARCADE);
+        this.player.body.allowRotation = false;
         this.cursor = game.input.keyboard.createCursorKeys(); //cursor object to detect key presses
+
+        this.wasd = {
+              up: game.input.keyboard.addKey(Phaser.Keyboard.W),
+              down: game.input.keyboard.addKey(Phaser.Keyboard.S),
+              left: game.input.keyboard.addKey(Phaser.Keyboard.A),
+              right: game.input.keyboard.addKey(Phaser.Keyboard.D),
+        };
 
 
     },
     update: function() {
         //setting initial speed and moving speed
-        var speed = 250;//moving speed
+        this.player.rotation = game.physics.arcade.angleToPointer(this.player);
+        var speed = 322;//moving speed
         this.player.body.velocity.y = 0;
         this.player.body.velocity.x = 0;
 
-        if(this.cursor.up.isDown) {
+        if(game.input.keyboard.isDown(Phaser.Keyboard.W)) {
             this.player.body.velocity.y -= speed;
-        } else if (this.cursor.down.isDown) {
+        } else if (game.input.keyboard.isDown(Phaser.Keyboard.S)) {
             this.player.body.velocity.y += speed;
         }
         
-        if(this.cursor.left.isDown) {
+        if(game.input.keyboard.isDown(Phaser.Keyboard.A)) {
             this.player.body.velocity.x -= speed;
-        } else if (this.cursor.right.isDown) {
+        } else if (game.input.keyboard.isDown(Phaser.Keyboard.D)) {
             this.player.body.velocity.x += speed;
         }
+
+        this.player.body.collideWorldBounds = true;
 
     }
 };
