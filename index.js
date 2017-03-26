@@ -16,6 +16,7 @@ var mainState = {
         game.load.image('player', 'assets/PNG/Sprites/Ships/spaceship.png'); 
         game.load.image('ezEnemy', 'assets/PNG/Sprites/Ships/spaceship.png'); 
         game.load.image('bullet', 'assets/PNG/Sprites/Missiles/spaceMissiles_012.png'); 
+        game.load.image('background', 'assets/background.png');
     },
 
 
@@ -23,6 +24,7 @@ var mainState = {
         game.stage.backgroundColor = '#040114'; //change background colour
         game.physics.startSystem(Phaser.Physics.ARCADE); //setting physics type
         game.world.enableBody = true;
+        game.add.tileSprite(0, 0, game.width, game.height, 'background');
 
         // Create the player
         player = game.add.sprite(300, 700, 'player');player.scale.setTo(0.5,0.5); //add and rescale
