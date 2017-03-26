@@ -5,8 +5,7 @@ var meteor
 var explosions;
 var ezEnemy;
 var bullets;
-var opBullets;
-var playerFireRate = 100;
+var playerFireRate = 200;
 var bulletDamage = 20;
 var enemies = Array();
 var scoreText;
@@ -120,7 +119,7 @@ var mainState = {
         bullets.enableBody = true;
         bullets.physicsBodyType = Phaser.Physics.ARCADE;
 
-        bullets.createMultiple(100, 'bullet');
+        bullets.createMultiple(200, 'bullet');
         bullets.setAll('checkWorldBounds', true);
         bullets.setAll('outOfBoundsKill', true);
 
