@@ -1,6 +1,7 @@
 var game = new Phaser.Game(600,800);
-
+//declarations for sprites/objects/some fields
 var player;
+var meteor
 var ezEnemy;
 var bullet;
 var bullets;
@@ -14,6 +15,7 @@ var mainState = {
     preload: function() { //for loading assets etc
         //load the main rocket image and save as 'player'
         game.load.image('player', 'assets/PNG/Sprites/Ships/spaceship.png'); 
+        game.load.image('meteor', 'assets/PNG/Sprites/Meteors/spaceMeteors_001.png'); 
         game.load.image('ezEnemy', 'assets/PNG/Sprites/Ships/spaceship.png'); 
         game.load.image('bullet', 'assets/PNG/Sprites/Missiles/spaceMissiles_012.png'); 
     },
@@ -30,8 +32,10 @@ var mainState = {
         game.physics.enable(player, Phaser.Physics.ARCADE);
         player.body.allowRotation = false;
 
+
         // Create an enemy
         enemies.push(new horizontalAIEnemy());
+        enemies.push(new spawnMeteor());
 
         //bullet creation
         bullets = game.add.group();
@@ -84,8 +88,8 @@ var mainState = {
             var collFunc = this.enemyCollision;
             game.physics.arcade.overlap(bullets, enemy.sprite, collFunc);
             game.physics.arcade.overlap(player, enemy.sprite, function() {
-            player.kill();
-            game.state.start('gg'); //ends game if user crashes into enemy
+                player.kill();
+                game.state.start('gg'); //ends game if user crashes into enemy
             });
 
             // Run updates
@@ -133,12 +137,12 @@ class enemy {
         this.scale = 0.5;
 
         this.healthBar = new HealthBar(game,
-                {
-                    x: 0,
-                    y: 0,
-                    width: this.sprite.width,
-                    height: 10
-                });
+            {
+                x: 0,
+                y: 0,
+                width: this.sprite.width,
+                height: 10
+            });
 
         var sprite = this.sprite;
 
@@ -169,6 +173,21 @@ class horizontalAIEnemy extends enemy {
             this.direction = -this.direction;
         }
     }
+}
+
+
+class spawnMeteor extends enemy {
+    constructor() {
+        super();
+        this.sprite = game.add.sprite(0, 0, 'meteor');
+        this.hp = 150;
+        this.initHP = 150;
+    }
+update() {
+    super.update();
+    this.sprite.x += 2;
+    this.sprite.y += 2;
+}
 }
 
 var gameOverState = {
