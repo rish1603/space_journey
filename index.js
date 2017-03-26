@@ -83,6 +83,10 @@ var mainState = {
             // Test collisions
             var collFunc = this.enemyCollision;
             game.physics.arcade.overlap(bullets, enemy.sprite, collFunc);
+            game.physics.arcade.overlap(player, enemy.sprite, function() {
+            player.kill();
+            game.state.start('gg'); //ends game if user crashes into enemy
+            });
 
             // Run updates
             enemy.update();
