@@ -161,6 +161,7 @@ var mainState = {
 
         if (game.input.activePointer.isDown) {
             player.fire();
+            explosion.play();
         }
 
         enemies.forEach((enemy) => {
@@ -222,8 +223,10 @@ var mainState = {
              // enemyObj.sprite.anchor.x = 0.5;
              // enemyObj.sprite.anchor.y = 0.5;
             var explosion = explosions.getFirstExists(false);
+            explosion.anchor.setTo(0.5,0.5);
             explosion.reset(enemyObj.sprite.x, enemyObj.sprite.y);
-            explosion.play('kaboom', 30, false, true);
+            explosion.animations.add('anim');
+            explosion.play('anim', 30, false, true);
             enemyObj.die();
 
         }
@@ -479,7 +482,7 @@ function getRand(min, max) {
 
 var gameOverState = {
     create: function() {
-        label = game.add.text(game.world.width / 2, game.world.height/2, 'GG \n Press Space to Restart',
+        label = game.add.text(game.world.width / 2, game.world.height/2, 'GG\nYou got ' + numKills + ' kills\n Press Space to Restart',
             {
                 font: '22px Arial',
                 fill: '#fff',
