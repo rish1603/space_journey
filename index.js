@@ -254,6 +254,7 @@ var gameOverState = {
             }
         );
         label.anchor.setTo(0.5,0.5);
+        game.camera.focusOn(label);
         this.spacebar = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
     },
     update: function() {
