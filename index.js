@@ -197,9 +197,9 @@ class spawnMeteor extends enemy {
         this.sprite.y +=  3
     }
 }
-// while(game.state.current != 'gg') {
+if (game.state.current = 'main'){
     setInterval(function() {enemies.push(new spawnMeteor())}, 7000) //spawn meteor every 7 seconds
-// }
+}
 
 function getRand(min, max) {
     return Math.random() * (max - min) + min;
