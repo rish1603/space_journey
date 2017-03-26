@@ -3,12 +3,12 @@ var game = new Phaser.Game(600,800);
 var player;
 var meteor
 var ezEnemy;
-var bullet;
 var bullets;
-var fireRate = 100;
+var playerFireRate = 100;
 var bulletDamage = 20;
 var nextFire = 0;
 var enemies = Array();
+var gameheight = 2000;
 
 var mainState = {
 
@@ -25,26 +25,27 @@ var mainState = {
     create: function() {
         game.stage.backgroundColor = '#040114'; //change background colour
         game.physics.startSystem(Phaser.Physics.ARCADE); //setting physics type
-        game.world.enableBody = true;
-        game.add.tileSprite(0, 0, game.width, game.height, 'background');
+        game.world.setBounds(0, 0, game.width, 2000);
+
+        for (var i=0;i<gameheight/game.height; i++) {
+            game.add.tileSprite(0, i*game.height, game.width, game.height, 'background');
+        }
 
         // Create the player
-        player = game.add.sprite(300, 700, 'player');
-        player.scale.setTo(0.5,0.5); //add and rescale
-        player.anchor.setTo(0.5,0.5);
-        game.physics.enable(player, Phaser.Physics.ARCADE);
-        player.body.allowRotation = false;
-
+        player = new Player();
+        game.camera.follow(player.sprite);
+        game.camera.focusOn(player.sprite);
 
         // Create an enemy
-        enemies.push(new horizontalAIEnemy());
+        enemies.push(new HorizontalAIEnemy());
+        enemies.push(new Meteor());
 
         //bullet creation
         bullets = game.add.group();
         bullets.enableBody = true;
         bullets.physicsBodyType = Phaser.Physics.ARCADE;
 
-        bullets.createMultiple(50, 'bullet');
+        bullets.createMultiple(1000, 'bullet');
         bullets.setAll('checkWorldBounds', true);
         bullets.setAll('outOfBoundsKill', true);
 
@@ -61,37 +62,20 @@ var mainState = {
 
     },
     update: function() {
-        //setting initial speed and moving speed
-        player.rotation = game.physics.arcade.angleToPointer(player);
-        var speed = 322;//moving speed
-        player.body.velocity.y = 0;
-        player.body.velocity.x = 0;
 
-        if(game.input.keyboard.isDown(Phaser.Keyboard.W)) {
-            player.body.velocity.y -= speed;
-        } else if (game.input.keyboard.isDown(Phaser.Keyboard.S)) {
-            player.body.velocity.y += speed;
-        }
-
-        if(game.input.keyboard.isDown(Phaser.Keyboard.A)) {
-            player.body.velocity.x -= speed;
-        } else if (game.input.keyboard.isDown(Phaser.Keyboard.D)) {
-            player.body.velocity.x += speed;
-        }
-
-        player.body.collideWorldBounds = true;
+        player.update();
 
         if (game.input.activePointer.isDown) {
-            fire();
+            player.fire();
         }
 
         enemies.forEach((enemy) => {
             // Test collisions
             var collFunc = this.enemyCollision;
             game.physics.arcade.overlap(bullets, enemy.sprite, collFunc);
-            game.physics.arcade.overlap(player, enemy.sprite, function() {
-                player.kill();
-                game.state.start('gg'); //ends game if user crashes into enemy
+            game.physics.arcade.overlap(player.sprite, enemy.sprite, function() {
+            player.sprite.kill();
+            game.state.start('gg'); //ends game if user crashes into enemy
             });
 
             // Run updates
@@ -101,7 +85,11 @@ var mainState = {
     },
 
     enemyCollision: function(enemy, bullet) {
-        bullet.kill();
+
+        if (bullet.owner != player) {
+            return;
+        }
+
         var enemyObj = enemies.filter((e) => e.sprite == enemy)[0];
 
         if(enemyObj.hp > 0) {
@@ -114,27 +102,19 @@ var mainState = {
 
         var health_per = 100 * enemyObj.hp / enemyObj.initHP;
         enemyObj.healthBar.setPercent(health_per);
+        bullet.kill();
     }
 };
 
-function fire() {
-    if (game.time.now > nextFire && bullets.countDead() > 0)
-    {
-        nextFire = game.time.now + fireRate;
-        var bullet = bullets.getFirstDead();
-        bullet.reset(player.x - 8, player.y - 8);
-        bullet.rotation = player.rotation + Math.PI / 2;
-        game.physics.arcade.moveToPointer(bullet, 430);
-    }
-}
+class Ship {
 
-class enemy {
     constructor() {
         this.sprite = game.add.sprite(100, 200, 'player');
         this.sprite.scale.setTo(0.5, 0.5);
         game.physics.enable(this.sprite, Phaser.Physics.ARCADE);
         this.sprite.anchor.setTo(0.5,0.5);
         this.sprite.rotation = Math.PI / 2;
+        this.fireRate = 300;
 
         this.hp = 100;
         this.initHP = 100;
@@ -154,12 +134,34 @@ class enemy {
         this.healthBar.getY = () => { return sprite.y  - sprite.height/1.5}
     }
 
+    // Fire a bullet
+    fire() {
+        if (game.time.now > nextFire && bullets.countDead() > 0)
+        {
+            nextFire = game.time.now + this.fireRate;
+            var bullet = bullets.getFirstDead();
+            bullet.owner = this;
+            bullet.reset(this.sprite.x, this.sprite.y);
+            bullet.rotation = this.sprite.rotation + Math.PI / 2;
+            game.physics.arcade.velocityFromAngle(bullet.angle - 90, 400, bullet.body.velocity)
+        }
+    }
+
+}
+
+class Enemy extends Ship {
+    constructor() {
+        super();
+    }
+
     die() {
         var sprite = this.sprite;
         var healthBar = this.healthBar;
         var deathTween = game.add.tween(this.sprite)
         deathTween.to( { alpha: 0.5 }, 100, Phaser.Easing.Linear.None, true, 0);
         deathTween.onComplete.add(() => {sprite.kill(); healthBar.kill()});
+
+        enemies.splice(enemies.indexOf(this), 1);
     }
 
     update() {
@@ -167,11 +169,46 @@ class enemy {
     }
 }
 
-class horizontalAIEnemy extends enemy {
+class Player extends Ship {
+    constructor() {
+        super();
+        this.sprite.anchor.setTo(0.5,0.5);
+        this.sprite.y = 1000;
+        this.fireRate = playerFireRate;
+        game.physics.enable(this.sprite, Phaser.Physics.ARCADE);
+        this.sprite.body.allowRotation = false;
+    }
+
+    update() {
+        //setting initial speed and moving speed
+        this.sprite.rotation = game.physics.arcade.angleToPointer(this.sprite);
+        var speed = 322;//moving speed
+        this.sprite.body.velocity.y = 0;
+        this.sprite.body.velocity.x = 0;
+
+        if(game.input.keyboard.isDown(Phaser.Keyboard.W)) {
+            this.sprite.body.velocity.y -= speed;
+        } else if (game.input.keyboard.isDown(Phaser.Keyboard.S)) {
+            this.sprite.body.velocity.y += speed;
+        }
+
+        if(game.input.keyboard.isDown(Phaser.Keyboard.A)) {
+            this.sprite.body.velocity.x -= speed;
+        } else if (game.input.keyboard.isDown(Phaser.Keyboard.D)) {
+            this.sprite.body.velocity.x += speed;
+        }
+
+        this.sprite.body.collideWorldBounds = true;
+    }
+}
+
+
+class HorizontalAIEnemy extends Enemy {
     constructor() {
         super();
         this.sprite.x = this.sprite.width/2;
         this.direction = 2;
+        this.lastFire = game.time;
     }
 
     update() {
@@ -180,25 +217,27 @@ class horizontalAIEnemy extends enemy {
         if (this.sprite.x > game.width-this.sprite.width/2 || this.sprite.x < this.sprite.width/2) {
             this.direction = -this.direction;
         }
+
+        // This will be auto rate limited
+        this.fire();
     }
 }
 
 
-class spawnMeteor extends enemy {
+class Meteor extends Enemy {
+
     constructor() {
         super();
-        this.sprite = game.add.sprite(getRand(0,600), 0, 'meteor');
+        this.sprite.loadTexture('meteor');
+
         this.hp = 150;
         this.initHP = 150;
-
     }
+
     update() {
         super.update();
         this.sprite.y +=  3
     }
-}
-if (game.state.current = 'main'){
-    setInterval(function() {enemies.push(new spawnMeteor())}, 7000) //spawn meteor every 7 seconds
 }
 
 function getRand(min, max) {
