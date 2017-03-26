@@ -1,10 +1,12 @@
 var game = new Phaser.Game(600,800);
 
-    var player;
-    var enemy1;
-    var bullet; //bullets?
-    var fireRate = 100;
-    var nextFire = 0;
+var player;
+var bullet;
+var bullets;
+var fireRate = 100;
+var bulletDamage = 20;
+var nextFire = 0;
+var enemies = Array();
 
 var mainState = {
 
@@ -20,13 +22,14 @@ var mainState = {
         game.physics.startSystem(Phaser.Physics.ARCADE); //setting physics type
         game.world.enableBody = true;
 
+        // Create the player
         player = game.add.sprite(300, 700, 'player');player.scale.setTo(0.5,0.5); //add and rescale
-        testEnemy = game.add.sprite(100, 200, 'player');testEnemy.scale.setTo(0.5,0.5); //add and rescale
-
         player.anchor.setTo(0.5,0.5);
         game.physics.enable(player, Phaser.Physics.ARCADE);
-        game.physics.enable(player, Phaser.Physics.ARCADE);
         player.body.allowRotation = false;
+
+        // Create an enemy
+        enemies.push(new horizontalAIEnemy());
 
         //bullet creation
         bullets = game.add.group();
@@ -55,8 +58,6 @@ var mainState = {
         var speed = 322;//moving speed
         player.body.velocity.y = 0;
         player.body.velocity.x = 0;
-        testEnemy.body.velocity.y = 0;
-        testEnemy.body.velocity.x = 0;
 
         if(game.input.keyboard.isDown(Phaser.Keyboard.W)) {
             player.body.velocity.y -= speed;
@@ -76,24 +77,69 @@ var mainState = {
             fire();
         }
 
-        game.physics.arcade.overlap(bullets, enemy1, this.message);
+        enemies.forEach((enemy) => {
+            // Test collisions
+            var collFunc = this.enemyCollision;
+            game.physics.arcade.overlap(bullets, enemy.sprite, collFunc);
+
+            // Run updates
+            enemy.update();
+        })
 
     },
 
-    message: function(enemy1, bullet) {
+    enemyCollision: function(enemy, bullet) {
         bullet.kill();
-        console.log("axax");
+        var enemyObj = enemies.filter((e) => e.sprite == enemy)[0];
+
+        if(enemyObj.hp > 0) {
+            enemyObj.hp -= bulletDamage;
+        }
+
+        if ( enemyObj.hp <= 0) {
+            enemy.kill();
+        }
+
     }
 };
 
 function fire() {
-
     if (game.time.now > nextFire && bullets.countDead() > 0)
     {
         nextFire = game.time.now + fireRate;
         var bullet = bullets.getFirstDead();
         bullet.reset(player.x - 8, player.y - 8);
         game.physics.arcade.moveToPointer(bullet, 430);
+    }
+}
+
+class enemy {
+    constructor() {
+        this.sprite = game.add.sprite(100, 200, 'player');
+        this.sprite.scale.setTo(0.5, 0.5);
+        game.physics.enable(this.sprite, Phaser.Physics.ARCADE);
+
+        this.hp = 100;
+        this.scale = 0.5;
+    }
+
+    update() {
+        return null;
+    }
+}
+
+class horizontalAIEnemy extends enemy {
+    constructor() {
+        super();
+        this.sprite.x = 0;
+        this.direction = 2;
+    }
+    update() {
+        this.sprite.x += this.direction;
+
+        if (this.sprite.x > game.width-this.sprite.width || this.sprite.x < 0) {
+            this.direction = -this.direction;
+        }
     }
 }
 
