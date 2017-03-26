@@ -1,6 +1,7 @@
 var game = new Phaser.Game(600,800);
 
 var player;
+var ezEnemy;
 var bullet;
 var bullets;
 var fireRate = 100;
@@ -13,6 +14,7 @@ var mainState = {
     preload: function() { //for loading assets etc
         //load the main rocket image and save as 'player'
         game.load.image('player', 'assets/PNG/Sprites/Ships/spaceship.png'); 
+        game.load.image('ezEnemy', 'assets/PNG/Sprites/Ships/spaceship.png'); 
         game.load.image('bullet', 'assets/PNG/Sprites/Missiles/spaceMissiles_012.png'); 
     },
 
@@ -81,6 +83,10 @@ var mainState = {
             // Test collisions
             var collFunc = this.enemyCollision;
             game.physics.arcade.overlap(bullets, enemy.sprite, collFunc);
+            game.physics.arcade.overlap(player, enemy.sprite, function() {
+            player.kill();
+            game.state.start('gg'); //ends game if user crashes into enemy
+            });
 
             // Run updates
             enemy.update();
@@ -171,5 +177,25 @@ class horizontalAIEnemy extends enemy {
     }
 }
 
+var gameOverState = {
+    create: function() {
+        label = game.add.text(game.world.width / 2, game.world.height/2, 'GG \n Press Space to Restart',
+            {
+                font: '22px Arial',
+                fill: '#fff',
+                align: 'center'
+            }
+        );
+        label.anchor.setTo(0.5,0.5);
+        this.spacebar = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+    },
+    update: function() {
+        if(this.spacebar.isDown){
+            game.state.start('main');
+        }
+    }
+};
+
 game.state.add('main', mainState);
+game.state.add('gg', gameOverState);
 game.state.start('main');
