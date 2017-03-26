@@ -160,6 +160,7 @@ var mainState = {
 
         if (game.input.activePointer.isDown) {
             player.fire();
+            explosion.play();
         }
 
         enemies.forEach((enemy) => {
