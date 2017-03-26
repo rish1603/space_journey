@@ -38,7 +38,6 @@ if (getParameterByName("theme") == "shit") {
 var gameMap = [
     {
         'horizontal': 2,
-        'boss': 1,
     },
     {
         'horizontal': 2,
@@ -163,7 +162,6 @@ var mainState = {
 
         if (game.input.activePointer.isDown) {
             player.fire();
-            explosion.play();
         }
 
         enemies.forEach((enemy) => {
@@ -175,7 +173,14 @@ var mainState = {
                 game.state.start('gg'); //ends game if user crashes into enemy
             });
 
-            if (enemy.sprite.y < enemy.sprite.height) {
+            if (enemy.constructor.name == "Boss"){
+                if (enemy.sprite.y < enemy.sprite.height/2) {
+                    enemy.sprite.y++;
+                } else {
+                    enemy.update();
+                }
+            }
+            else if (enemy.sprite.y < enemy.sprite.height) {
                 // Make an entrance
                 enemy.sprite.y++;
             }
@@ -471,6 +476,11 @@ class Boss extends Enemy {
         if (this.sprite.x < this.sprite.width/2) {
             this.direction = Math.abs(this.direction);
         }
+
+        this.healthBar.setPosition(
+                this.healthBar.getX(),
+                this.sprite.y + 60
+        );
 
 
         // This will be auto rate limited
