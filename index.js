@@ -5,7 +5,7 @@ var meteor
 var explosions;
 var ezEnemy;
 var bullets;
-var playerFireRate = 100;
+var playerFireRate = 200;
 var bulletDamage = 20;
 var enemies = Array();
 var scoreText;
