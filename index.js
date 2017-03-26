@@ -6,9 +6,42 @@ var ezEnemy;
 var bullets;
 var playerFireRate = 100;
 var bulletDamage = 20;
-var nextFire = 0;
 var enemies = Array();
-var gameheight = 2000;
+
+var currentLevel = -1;
+
+var gameMap = [
+    {
+        'horizontal': 2
+    },
+    {
+        'horizontal': 2,
+        'meteor': 1
+    }
+]
+
+
+function startLevel(levelNumber) {
+
+    var mapEnemyTypes = {
+        "horizontal": HorizontalAIEnemy,
+        "meteor": Meteor
+    }
+
+    var level = gameMap[levelNumber];
+
+    for (enemy in level) {
+        var num_enemies = level[enemy];
+        var construct = mapEnemyTypes[enemy];
+
+        for (var i=0; i<num_enemies; i++) {
+            var enemy = new construct();
+            enemy.sprite.x = enemy.sprite.width/2 +(i * game.width / num_enemies);
+            enemies.push(enemy);
+        }
+
+    }
+}
 
 var mainState = {
 
@@ -21,47 +54,43 @@ var mainState = {
         game.load.image('background', 'assets/background.png');
     },
 
-
     create: function() {
         game.stage.backgroundColor = '#040114'; //change background colour
         game.physics.startSystem(Phaser.Physics.ARCADE); //setting physics type
-        game.world.setBounds(0, 0, game.width, 2000);
+        game.world.setBounds(0, 0, game.width, game.height);
 
-        for (var i=0;i<gameheight/game.height; i++) {
-            game.add.tileSprite(0, i*game.height, game.width, game.height, 'background');
-        }
+        game.add.tileSprite(0, 0, game.width, game.height, 'background');
 
         // Create the player
         player = new Player();
         game.camera.follow(player.sprite);
         game.camera.focusOn(player.sprite);
 
-        // Create an enemy
-        enemies.push(new HorizontalAIEnemy());
-        enemies.push(new Meteor());
-
         //bullet creation
         bullets = game.add.group();
         bullets.enableBody = true;
         bullets.physicsBodyType = Phaser.Physics.ARCADE;
 
-        bullets.createMultiple(1000, 'bullet');
+        bullets.createMultiple(100, 'bullet');
         bullets.setAll('checkWorldBounds', true);
         bullets.setAll('outOfBoundsKill', true);
 
 
         this.cursor = game.input.keyboard.createCursorKeys(); //cursor object to detect key presses
-
         this.wasd = {
             up: game.input.keyboard.addKey(Phaser.Keyboard.W),
             down: game.input.keyboard.addKey(Phaser.Keyboard.S),
             left: game.input.keyboard.addKey(Phaser.Keyboard.A),
             right: game.input.keyboard.addKey(Phaser.Keyboard.D),
         };
-
-
     },
+
     update: function() {
+
+        if (enemies.length == 0) {
+            currentLevel++;
+            startLevel(currentLevel);
+        }
 
         player.update();
 
@@ -74,8 +103,8 @@ var mainState = {
             var collFunc = this.enemyCollision;
             game.physics.arcade.overlap(bullets, enemy.sprite, collFunc);
             game.physics.arcade.overlap(player.sprite, enemy.sprite, function() {
-            player.sprite.kill();
-            game.state.start('gg'); //ends game if user crashes into enemy
+                player.sprite.kill();
+                game.state.start('gg'); //ends game if user crashes into enemy
             });
 
             // Run updates
@@ -109,12 +138,13 @@ var mainState = {
 class Ship {
 
     constructor() {
-        this.sprite = game.add.sprite(100, 200, 'player');
+        this.sprite = game.add.sprite(0, 100, 'player');
         this.sprite.scale.setTo(0.5, 0.5);
         game.physics.enable(this.sprite, Phaser.Physics.ARCADE);
         this.sprite.anchor.setTo(0.5,0.5);
         this.sprite.rotation = Math.PI / 2;
-        this.fireRate = 300;
+        this.fireRate = 500;
+        this.nextFire = 0;
 
         this.hp = 100;
         this.initHP = 100;
@@ -136,22 +166,15 @@ class Ship {
 
     // Fire a bullet
     fire() {
-        if (game.time.now > nextFire && bullets.countDead() > 0)
+        if (game.time.now > this.nextFire && bullets.countDead() > 0)
         {
-            nextFire = game.time.now + this.fireRate;
+            this.nextFire = game.time.now + this.fireRate;
             var bullet = bullets.getFirstDead();
             bullet.owner = this;
             bullet.reset(this.sprite.x, this.sprite.y);
             bullet.rotation = this.sprite.rotation + Math.PI / 2;
             game.physics.arcade.velocityFromAngle(bullet.angle - 90, 400, bullet.body.velocity)
         }
-    }
-
-}
-
-class Enemy extends Ship {
-    constructor() {
-        super();
     }
 
     die() {
@@ -164,16 +187,24 @@ class Enemy extends Ship {
         enemies.splice(enemies.indexOf(this), 1);
     }
 
+}
+
+class Enemy extends Ship {
+    constructor() {
+        super();
+    }
     update() {
         this.healthBar.setPosition(this.healthBar.getX(), this.healthBar.getY());
     }
 }
 
 class Player extends Ship {
+
     constructor() {
         super();
         this.sprite.anchor.setTo(0.5,0.5);
-        this.sprite.y = 1000;
+        this.sprite.y = game.world.height - 100;
+        this.sprite.x = game.width/2;
         this.fireRate = playerFireRate;
         game.physics.enable(this.sprite, Phaser.Physics.ARCADE);
         this.sprite.body.allowRotation = false;
@@ -182,6 +213,7 @@ class Player extends Ship {
     update() {
         //setting initial speed and moving speed
         this.sprite.rotation = game.physics.arcade.angleToPointer(this.sprite);
+        this.healthBar.setPosition(this.healthBar.getX(), this.healthBar.getY());
         var speed = 322;//moving speed
         this.sprite.body.velocity.y = 0;
         this.sprite.body.velocity.x = 0;
@@ -259,6 +291,8 @@ var gameOverState = {
     },
     update: function() {
         if(this.spacebar.isDown){
+            enemies = [];
+            currentLevel = -1;
             game.state.start('main');
         }
     }
