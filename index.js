@@ -34,12 +34,21 @@ if (getParameterByName("theme") == "shit") {
 
 var gameMap = [
     {
-        //'horizontal': 2,
-        '4way': 1
+        'horizontal': 2,
     },
     {
         'horizontal': 2,
         'meteor': 1
+    },
+    {
+        'horizontal': 2,
+        'meteor': 1,
+        '4way': 1
+    },
+    {
+        'boss': 1,
+        '4way': 2,
+        'meteor': 2
     }
 ]
 
@@ -49,8 +58,8 @@ function startLevel(levelNumber) {
     var mapEnemyTypes = {
         "horizontal": HorizontalAIEnemy,
         "meteor": Meteor,
-        "4way": FourWay
-
+        "4way": FourWay,
+        "boss": Boss
     }
 
     var level = gameMap[levelNumber];
@@ -61,7 +70,9 @@ function startLevel(levelNumber) {
 
         for (var i=0; i<num_enemies; i++) {
             var enemy = new construct();
-            enemy.sprite.x = enemy.sprite.width/2 +(i * game.width / num_enemies);
+            enemy.sprite.x = enemy.sprite.width/2 + i * (game.width - enemy.sprite.width) / num_enemies
+            if (num_enemies == 1)
+                enemy.sprite.x = Math.random() * game.width
             enemy.sprite.y = -enemy.sprite.height; // From above
             enemies.push(enemy);
         }
@@ -75,6 +86,7 @@ var mainState = {
         //load the main rocket image and save as 'player'
         game.load.image('player', 'assets/PNG/' + theme + '/Ships/spaceship.png'); 
         game.load.image('4way', 'assets/PNG/' + theme + '/Ships/4way.png'); 
+        game.load.image('boss', 'assets/PNG/' + theme + '/Ships/boss.png'); 
         game.load.image('meteor', 'assets/PNG/Sprites/Meteors/spaceMeteors_001.png'); 
         game.load.image('bullet', 'assets/PNG/Sprites/Missiles/spaceMissiles_012.png'); 
         game.load.image('background', 'assets/background.png');
@@ -134,6 +146,7 @@ var mainState = {
         }
 
         player.update();
+        game.physics.arcade.overlap(bullets, player.sprite, this.playerHit);
 
         if (game.input.activePointer.isDown) {
             player.fire();
@@ -161,6 +174,24 @@ var mainState = {
         //update score text
     },
 
+    // When a player is  hit by a bullet
+    playerHit: function(x, bullet) {
+        if (bullet.owner == player) {
+            return;
+        }
+
+        player.hp -= bulletDamage;
+
+        if (player.hp <= 0) {
+            player.sprite.kill();
+            game.state.start('gg'); //ends game if user crashes into enemy
+        }
+
+        var health_per = 100 * player.hp / player.initHP;
+        player.healthBar.setPercent(health_per);
+        bullet.kill();
+    },
+
     enemyCollision: function(enemy, bullet) {
 
         if (bullet.owner != player) {
@@ -168,6 +199,9 @@ var mainState = {
         }
 
         var enemyObj = enemies.filter((e) => e.sprite == enemy)[0];
+
+        if (!enemyObj)
+            return;
 
         if(enemyObj.hp > 0) {
             enemyObj.hp -= bulletDamage;
@@ -266,6 +300,9 @@ class Player extends Ship {
         this.fireRate = playerFireRate;
         game.physics.enable(this.sprite, Phaser.Physics.ARCADE);
         this.sprite.body.allowRotation = false;
+
+        this.hp = 1000;
+        this.initHP = 1000;
     }
 
     update() {
@@ -305,8 +342,11 @@ class HorizontalAIEnemy extends Enemy {
     update() {
         super.update();
         this.sprite.x += this.direction;
-        if (this.sprite.x > game.width-this.sprite.width/2 || this.sprite.x < this.sprite.width/2) {
-            this.direction = -this.direction;
+        if (this.sprite.x > game.width-this.sprite.width/2) {
+            this.direction = -Math.abs(this.direction);
+        }
+        if (this.sprite.x < this.sprite.width/2) {
+            this.direction = Math.abs(this.direction);
         }
 
         // This will be auto rate limited
@@ -323,6 +363,9 @@ class FourWay extends Enemy {
         this.fireRate = 500;
         this.hp = 100;
         this.initHP = 100;
+
+        this.ydirec = 2;
+        this.xdirec = -2;
     }
 
     fire() {
@@ -338,6 +381,16 @@ class FourWay extends Enemy {
 
     update() {
         super.update();
+
+        this.sprite.y += this.ydirec;
+        this.sprite.x += this.xdirec;
+
+        if (this.sprite.x > game.width-this.sprite.width/2 || this.sprite.x < this.sprite.width/2) {
+            this.xdirec = -this.xdirec;
+        }
+        if (this.sprite.y > game.height-this.sprite.height/2 || this.sprite.y < this.sprite.height) {
+            this.ydirec = -this.ydirec;
+        }
         this.fire();
     }
 }
@@ -351,11 +404,53 @@ class Meteor extends Enemy {
 
         this.hp = 150;
         this.initHP = 150;
+
+        this.ydirec = 2;
+        this.xdirec = 2;
     }
 
     update() {
         super.update();
-        this.sprite.y +=  3
+        this.sprite.y += this.ydirec;
+        this.sprite.x += this.xdirec;
+
+        if (this.sprite.x > game.width-this.sprite.width/2 || this.sprite.x < this.sprite.width/2) {
+            this.xdirec = -this.xdirec;
+        }
+        if (this.sprite.y > game.height-this.sprite.height/2 || this.sprite.y < this.sprite.height) {
+            this.ydirec = -this.ydirec;
+        }
+
+    }
+}
+
+class Boss extends Enemy {
+    constructor() {
+        super();
+        this.sprite.rotation = 0;
+        this.sprite.loadTexture('boss');
+        this.sprite.x = this.sprite.width/2;
+        this.sprite.scale = {x: 1, y: 1};
+        this.direction = 2;
+        this.lastFire = game.time;
+
+        this.hp = 1000;
+        this.initHP = 1000;
+    }
+
+    update() {
+        super.update();
+        this.sprite.x += this.direction;
+        if (this.sprite.x > game.width-this.sprite.width/2) {
+            this.direction = -Math.abs(this.direction);
+        }
+        if (this.sprite.x < this.sprite.width/2) {
+            this.direction = Math.abs(this.direction);
+        }
+
+
+        // This will be auto rate limited
+        this.fire(90);
     }
 }
 
