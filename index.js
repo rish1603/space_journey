@@ -88,6 +88,7 @@ var mainState = {
     preload: function() { //for loading assets etc
         //load the main rocket image and save as 'player'
         game.load.image('player', 'assets/PNG/' + theme + '/Ships/spaceship.png'); 
+        game.load.image('OGplayer', 'assets/PNG/' + theme + '/Ships/ogship.png'); 
         game.load.image('4way', 'assets/PNG/' + theme + '/Ships/4way.png'); 
         game.load.image('boss', 'assets/PNG/Shit/Ships/boss.png'); 
         game.load.image('meteor', 'assets/PNG/Sprites/Meteors/spaceMeteors_001.png'); 
@@ -543,6 +544,11 @@ var winState = {
         label.anchor.setTo(0.5,0.5);
         game.camera.focusOn(label);
         this.spacebar = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+
+        this.sprite = game.add.sprite(0, 800, 'OGplayer');
+        this.sprite.rotation = 1.5 * Math.PI;
+        this.direction = 1;
+
     },
     update: function() {
         if(this.spacebar.isDown){
@@ -550,6 +556,16 @@ var winState = {
             currentLevel = -1;
             numKills = 0;
             game.state.start('main');
+
+        }
+        this.sprite.x += this.direction;
+
+        if (this.sprite.x + this.sprite.width >= game.width) {
+            this.direction = -1;
+        }
+
+        if (this.sprite.x <= 0) {
+            this.direction = 1;
         }
     }
 };
