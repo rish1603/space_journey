@@ -14,6 +14,7 @@ var numKills = 0;
 
 var explosionSound;
 var shootingSound;
+var endingSound;
 
 // Getting query parameters
 function getParameterByName(name, url) {
@@ -37,6 +38,7 @@ if (getParameterByName("theme") == "shit") {
 var gameMap = [
     {
         'horizontal': 2,
+        'boss': 1,
     },
     {
         'horizontal': 2,
@@ -88,7 +90,7 @@ var mainState = {
         //load the main rocket image and save as 'player'
         game.load.image('player', 'assets/PNG/' + theme + '/Ships/spaceship.png'); 
         game.load.image('4way', 'assets/PNG/' + theme + '/Ships/4way.png'); 
-        game.load.image('boss', 'assets/PNG/' + theme + '/Ships/boss.png'); 
+        game.load.image('boss', 'assets/PNG/Shit/Ships/boss.png'); 
         game.load.image('meteor', 'assets/PNG/Sprites/Meteors/spaceMeteors_001.png'); 
         game.load.image('bullet', 'assets/PNG/Sprites/Missiles/spaceMissiles_012.png'); 
         game.load.spritesheet('kaboom', 'assets/explode.png',128,128);
@@ -96,6 +98,7 @@ var mainState = {
 
         game.load.audio('explosion', 'assets/sounds/explosion.wav');
         game.load.audio('gunfire', 'assets/sounds/shooting.wav');
+        game.load.audio('endingwow', 'assets/sounds/endingwow.wav');
     },
 
     create: function() {
@@ -473,6 +476,18 @@ class Boss extends Enemy {
         // This will be auto rate limited
         this.fire(90);
     }
+
+    fire() {
+        if (game.time.now > this.nextFire && bullets.countDead() > 0)
+        {
+            this.nextFire = game.time.now + this.fireRate;
+            super.fire(70, true);
+            super.fire(80, true);
+            super.fire(90, true);
+            super.fire(100, true);
+            super.fire(110, true);
+        }
+    }
 }
 
 function getRand(min, max) {
@@ -491,6 +506,8 @@ var gameOverState = {
         label.anchor.setTo(0.5,0.5);
         game.camera.focusOn(label);
         this.spacebar = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+        endingwow = game.add.audio('endingwow');
+        endingwow.play();
     },
     update: function() {
         if(this.spacebar.isDown){
