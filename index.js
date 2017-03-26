@@ -37,6 +37,7 @@ function startLevel(levelNumber) {
         for (var i=0; i<num_enemies; i++) {
             var enemy = new construct();
             enemy.sprite.x = enemy.sprite.width/2 +(i * game.width / num_enemies);
+            enemy.sprite.y = -enemy.sprite.height; // From above
             enemies.push(enemy);
         }
 
@@ -107,8 +108,14 @@ var mainState = {
                 game.state.start('gg'); //ends game if user crashes into enemy
             });
 
-            // Run updates
-            enemy.update();
+            if (enemy.sprite.y < enemy.sprite.height) {
+                // Make an entrance
+                enemy.sprite.y++;
+            }
+            else {
+                // Run updates
+                enemy.update();
+            }
         })
 
     },
