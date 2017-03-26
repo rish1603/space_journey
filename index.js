@@ -1,6 +1,7 @@
 var game = new Phaser.Game(600,800);
-
+//declarations for sprites/objects/some fields
 var player;
+var meteor
 var ezEnemy;
 var bullets;
 var playerFireRate = 100;
@@ -14,6 +15,7 @@ var mainState = {
     preload: function() { //for loading assets etc
         //load the main rocket image and save as 'player'
         game.load.image('player', 'assets/PNG/Sprites/Ships/spaceship.png'); 
+        game.load.image('meteor', 'assets/PNG/Sprites/Meteors/spaceMeteors_001.png'); 
         game.load.image('ezEnemy', 'assets/PNG/Sprites/Ships/spaceship.png'); 
         game.load.image('bullet', 'assets/PNG/Sprites/Missiles/spaceMissiles_012.png'); 
         game.load.image('background', 'assets/background.png');
@@ -36,6 +38,7 @@ var mainState = {
 
         // Create an enemy
         enemies.push(new HorizontalAIEnemy());
+        enemies.push(new Meteor());
 
         //bullet creation
         bullets = game.add.group();
@@ -118,13 +121,13 @@ class Ship {
         this.scale = 0.5;
 
         this.healthBar = new HealthBar(game, {
-                    x: 0,
-                    y: 0,
-                    width: this.sprite.width,
-                    height: 10,
-                    bg: {color: "#BDC3C7"}, // Grey
-                    bar:{color: "#26A65B"}
-                });
+            x: 0,
+            y: 0,
+            width: this.sprite.width,
+            height: 10,
+            bg: {color: "#BDC3C7"}, // Grey
+            bar:{color: "#26A65B"}
+        });
 
         var sprite = this.sprite;
         this.healthBar.getX = () => { return sprite.x }
@@ -144,6 +147,26 @@ class Ship {
         }
     }
 
+}
+
+class Enemy extends Ship {
+    constructor() {
+        super();
+    }
+
+    die() {
+        var sprite = this.sprite;
+        var healthBar = this.healthBar;
+        var deathTween = game.add.tween(this.sprite)
+        deathTween.to( { alpha: 0.5 }, 100, Phaser.Easing.Linear.None, true, 0);
+        deathTween.onComplete.add(() => {sprite.kill(); healthBar.kill()});
+
+        enemies.splice(enemies.indexOf(this), 1);
+    }
+
+    update() {
+        this.healthBar.setPosition(this.healthBar.getX(), this.healthBar.getY());
+    }
 }
 
 class Player extends Ship {
@@ -179,25 +202,6 @@ class Player extends Ship {
     }
 }
 
-class Enemy extends Ship {
-    constructor() {
-        super();
-    }
-
-    die() {
-        var sprite = this.sprite;
-        var healthBar = this.healthBar;
-        var deathTween = game.add.tween(this.sprite)
-        deathTween.to( { alpha: 0.5 }, 100, Phaser.Easing.Linear.None, true, 0);
-        deathTween.onComplete.add(() => {sprite.kill(); healthBar.kill()});
-
-        enemies.splice(enemies.indexOf(this), 1);
-    }
-
-    update() {
-        this.healthBar.setPosition(this.healthBar.getX(), this.healthBar.getY());
-    }
-}
 
 class HorizontalAIEnemy extends Enemy {
     constructor() {
@@ -217,6 +221,31 @@ class HorizontalAIEnemy extends Enemy {
         // This will be auto rate limited
         this.fire();
     }
+}
+
+
+class Meteor extends Enemy {
+
+    constructor() {
+        super();
+        this.sprite.loadTexture('meteor');
+
+        this.hp = 150;
+        this.sprite.body.allowRotation = true;
+        this.sprite.rotation = 10;
+        this.initHP = 150;
+    }
+
+    update() {
+        super.update();
+        this.sprite.angularVelocity = 10
+        this.sprite.y +=  3
+    }
+
+}
+
+function getRand(min, max) {
+      return Math.random() * (max - min) + min;
 }
 
 var gameOverState = {
