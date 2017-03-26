@@ -119,7 +119,7 @@ var mainState = {
         bullets.enableBody = true;
         bullets.physicsBodyType = Phaser.Physics.ARCADE;
 
-        bullets.createMultiple(100, 'bullet');
+        bullets.createMultiple(200, 'bullet');
         bullets.setAll('checkWorldBounds', true);
         bullets.setAll('outOfBoundsKill', true);
 
