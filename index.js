@@ -189,22 +189,20 @@ class spawnMeteor extends enemy {
         super();
         this.sprite = game.add.sprite(getRand(0,600), 0, 'meteor');
         this.hp = 150;
-        this.sprite.body.allowRotation = true;
-        this.sprite.rotation = 10;
         this.initHP = 150;
 
     }
     update() {
         super.update();
-        this.sprite.angularVelocity = 10
         this.sprite.y +=  3
     }
 }
-
-setInterval(function() {enemies.push(new spawnMeteor())}, 7000) //spawn meteor every 7 seconds
+// while(game.state.current != 'gg') {
+    setInterval(function() {enemies.push(new spawnMeteor())}, 7000) //spawn meteor every 7 seconds
+// }
 
 function getRand(min, max) {
-      return Math.random() * (max - min) + min;
+    return Math.random() * (max - min) + min;
 }
 
 var gameOverState = {
