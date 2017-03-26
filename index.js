@@ -99,6 +99,7 @@ var mainState = {
         game.load.audio('explosion', 'assets/sounds/explosion.wav');
         game.load.audio('gunfire', 'assets/sounds/shooting.wav');
         game.load.audio('endingwow', 'assets/sounds/endingwow.wav');
+        game.load.audio('reaction', 'assets/sounds/black-people-react.mp3');
     },
 
     create: function() {
@@ -533,6 +534,7 @@ var gameOverState = {
 var winState = {
 
     create: function() {
+        reaction = game.add.audio('reaction');
         var label = game.add.text(game.world.width / 2, game.world.height/2, 'You win!!!!!',
             {
                 font: '22px Arial',
@@ -540,6 +542,7 @@ var winState = {
                 align: 'center'
             }
         );
+        reaction.play();
 
         label.anchor.setTo(0.5,0.5);
         game.camera.focusOn(label);
