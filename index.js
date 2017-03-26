@@ -100,8 +100,10 @@ var mainState = {
 
         if ( enemyObj.hp <= 0) {
             enemy.kill();
+            enemyObj.healthBar.kill();
         }
 
+        enemyObj.healthBar.setPercent(100 * enemyObj.hp / enemyObj.initHP);
     }
 };
 
@@ -111,6 +113,7 @@ function fire() {
         nextFire = game.time.now + fireRate;
         var bullet = bullets.getFirstDead();
         bullet.reset(player.x - 8, player.y - 8);
+        bullet.rotation = player.rotation + Math.PI / 2;
         game.physics.arcade.moveToPointer(bullet, 430);
     }
 }
@@ -122,11 +125,29 @@ class enemy {
         game.physics.enable(this.sprite, Phaser.Physics.ARCADE);
 
         this.hp = 100;
+        this.initHP = 100;
         this.scale = 0.5;
+
+        this.healthBar = new HealthBar(game,
+                {
+                    x: 0,
+                    y: 0,
+                    width: this.sprite.width,
+                    height: 10
+                });
+
+        var sprite = this.sprite;
+
+        this.healthBar.getX = function() {
+            return sprite.x + (sprite.width / 2);
+        }
+        this.healthBar.getY = function() {
+            return sprite.y - (sprite.height/3);
+        }
     }
 
     update() {
-        return null;
+        this.healthBar.setPosition(this.healthBar.getX(), this.healthBar.getY());
     }
 }
 
@@ -136,9 +157,10 @@ class horizontalAIEnemy extends enemy {
         this.sprite.x = 0;
         this.direction = 2;
     }
-    update() {
-        this.sprite.x += this.direction;
 
+    update() {
+        super.update();
+        this.sprite.x += this.direction;
         if (this.sprite.x > game.width-this.sprite.width || this.sprite.x < 0) {
             this.direction = -this.direction;
         }
