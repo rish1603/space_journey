@@ -97,11 +97,11 @@ var mainState = {
         }
 
         if ( enemyObj.hp <= 0) {
-            enemy.kill();
-            enemyObj.healthBar.kill();
+            enemyObj.die();
         }
 
-        enemyObj.healthBar.setPercent(100 * enemyObj.hp / enemyObj.initHP);
+        var health_per = 100 * enemyObj.hp / enemyObj.initHP;
+        enemyObj.healthBar.setPercent(health_per);
     }
 };
 
@@ -121,27 +121,33 @@ class enemy {
         this.sprite = game.add.sprite(100, 200, 'player');
         this.sprite.scale.setTo(0.5, 0.5);
         game.physics.enable(this.sprite, Phaser.Physics.ARCADE);
+        this.sprite.anchor.setTo(0.5,0.5);
+        //this.sprite.rotation = Math.PI / 2;
 
         this.hp = 100;
         this.initHP = 100;
         this.scale = 0.5;
 
-        this.healthBar = new HealthBar(game,
-                {
+        this.healthBar = new HealthBar(game, {
                     x: 0,
                     y: 0,
                     width: this.sprite.width,
-                    height: 10
+                    height: 10,
+                    bg: {color: "#BDC3C7"}, // Grey
+                    bar:{color: "#26A65B"}
                 });
 
         var sprite = this.sprite;
+        this.healthBar.getX = () => { return sprite.x }
+        this.healthBar.getY = () => { return sprite.y  - sprite.height/1.5}
+    }
 
-        this.healthBar.getX = function() {
-            return sprite.x + (sprite.width / 2);
-        }
-        this.healthBar.getY = function() {
-            return sprite.y - (sprite.height/3);
-        }
+    die() {
+        var sprite = this.sprite;
+        var healthBar = this.healthBar;
+        var deathTween = game.add.tween(this.sprite)
+        deathTween.to( { alpha: 0.5 }, 100, Phaser.Easing.Linear.None, true, 0);
+        deathTween.onComplete.add(() => {sprite.kill(); healthBar.kill()});
     }
 
     update() {
@@ -152,14 +158,14 @@ class enemy {
 class horizontalAIEnemy extends enemy {
     constructor() {
         super();
-        this.sprite.x = 0;
+        this.sprite.x = this.sprite.width/2;
         this.direction = 2;
     }
 
     update() {
         super.update();
         this.sprite.x += this.direction;
-        if (this.sprite.x > game.width-this.sprite.width || this.sprite.x < 0) {
+        if (this.sprite.x > game.width-this.sprite.width/2 || this.sprite.x < this.sprite.width/2) {
             this.direction = -this.direction;
         }
     }
