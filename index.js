@@ -485,9 +485,10 @@ var gameOverState = {
     }
 };
 
-var gameOverState = {
+var winState = {
+
     create: function() {
-        label = game.add.text(game.world.width / 2, game.world.height/2, 'You win!!!!!",
+        var label = game.add.text(game.world.width / 2, game.world.height/2, 'You win!!!!!',
             {
                 font: '22px Arial',
                 fill: '#fff',
