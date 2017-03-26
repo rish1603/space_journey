@@ -8,6 +8,7 @@ var fireRate = 100;
 var bulletDamage = 20;
 var nextFire = 0;
 var enemies = Array();
+var gameheight = 2000;
 
 var mainState = {
 
@@ -23,14 +24,20 @@ var mainState = {
     create: function() {
         game.stage.backgroundColor = '#040114'; //change background colour
         game.physics.startSystem(Phaser.Physics.ARCADE); //setting physics type
-        game.world.enableBody = true;
-        game.add.tileSprite(0, 0, game.width, game.height, 'background');
+        game.world.setBounds(0, 0, game.width, 2000);
+
+        for (var i=0;i<gameheight/game.height; i++) {
+            game.add.tileSprite(0, i*game.height, game.width, game.height, 'background');
+        }
 
         // Create the player
         player = game.add.sprite(300, 700, 'player');player.scale.setTo(0.5,0.5); //add and rescale
         player.anchor.setTo(0.5,0.5);
         game.physics.enable(player, Phaser.Physics.ARCADE);
         player.body.allowRotation = false;
+
+        game.camera.follow(player);
+        game.camera.focusOn(player);
 
         // Create an enemy
         enemies.push(new horizontalAIEnemy());
