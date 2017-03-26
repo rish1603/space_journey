@@ -128,7 +128,7 @@ class enemy {
         this.sprite.scale.setTo(0.5, 0.5);
         game.physics.enable(this.sprite, Phaser.Physics.ARCADE);
         this.sprite.anchor.setTo(0.5,0.5);
-        //this.sprite.rotation = Math.PI / 2;
+        this.sprite.rotation = Math.PI / 2;
 
         this.hp = 100;
         this.initHP = 100;
