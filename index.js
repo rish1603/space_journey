@@ -145,6 +145,10 @@ var mainState = {
             startLevel(currentLevel);
         }
 
+        if (currentLevel == gameMap.length) {
+            game.state.start('youwin'); // you win
+        }
+
         player.update();
         game.physics.arcade.overlap(bullets, player.sprite, this.playerHit);
 
@@ -481,6 +485,31 @@ var gameOverState = {
     }
 };
 
+var gameOverState = {
+    create: function() {
+        label = game.add.text(game.world.width / 2, game.world.height/2, 'You win!!!!!",
+            {
+                font: '22px Arial',
+                fill: '#fff',
+                align: 'center'
+            }
+        );
+
+        label.anchor.setTo(0.5,0.5);
+        game.camera.focusOn(label);
+        this.spacebar = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+    },
+    update: function() {
+        if(this.spacebar.isDown){
+            enemies = [];
+            currentLevel = -1;
+            numKills = 0;
+            game.state.start('main');
+        }
+    }
+};
+
 game.state.add('main', mainState);
 game.state.add('gg', gameOverState);
+game.state.add('youwin', winState);
 game.state.start('main');
