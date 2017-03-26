@@ -13,11 +13,29 @@ var numKills = 0;
 var explosionSound;
 var shootingSound;
 
+// Getting query parameters
+function getParameterByName(name, url) {
+    if (!url) {
+      url = window.location.href;
+    }
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+
 var theme = "Sprites";
+
+if (getParameterByName("theme") == "shit") {
+    theme = "Shit";
+}
 
 var gameMap = [
     {
-        'horizontal': 2
+        //'horizontal': 2,
+        '4way': 1
     },
     {
         'horizontal': 2,
@@ -30,7 +48,9 @@ function startLevel(levelNumber) {
 
     var mapEnemyTypes = {
         "horizontal": HorizontalAIEnemy,
-        "meteor": Meteor
+        "meteor": Meteor,
+        "4way": FourWay
+
     }
 
     var level = gameMap[levelNumber];
@@ -54,6 +74,7 @@ var mainState = {
     preload: function() { //for loading assets etc
         //load the main rocket image and save as 'player'
         game.load.image('player', 'assets/PNG/' + theme + '/Ships/spaceship.png'); 
+        game.load.image('4way', 'assets/PNG/' + theme + '/Ships/4way.png'); 
         game.load.image('meteor', 'assets/PNG/Sprites/Meteors/spaceMeteors_001.png'); 
         game.load.image('bullet', 'assets/PNG/Sprites/Missiles/spaceMissiles_012.png'); 
         game.load.image('background', 'assets/background.png');
@@ -192,14 +213,19 @@ class Ship {
     }
 
     // Fire a bullet
-    fire() {
-        if (game.time.now > this.nextFire && bullets.countDead() > 0)
+    fire(direction, force) {
+
+        // Additional direction
+        direction = direction || 0;
+        force = force || false;
+
+        if (game.time.now > this.nextFire && bullets.countDead() > 0 || force)
         {
             this.nextFire = game.time.now + this.fireRate;
             var bullet = bullets.getFirstDead();
             bullet.owner = this;
             bullet.reset(this.sprite.x, this.sprite.y);
-            bullet.rotation = this.sprite.rotation + Math.PI / 2;
+            bullet.rotation = (Math.PI * direction / 180) + this.sprite.rotation + Math.PI / 2;
             game.physics.arcade.velocityFromAngle(bullet.angle - 90, 400, bullet.body.velocity);
             gunfire.play();
         }
@@ -284,6 +310,34 @@ class HorizontalAIEnemy extends Enemy {
         }
 
         // This will be auto rate limited
+        this.fire();
+    }
+}
+
+class FourWay extends Enemy {
+
+    constructor() {
+        super();
+        this.sprite.loadTexture('4way');
+        this.sprite.rotation = 0;
+        this.fireRate = 500;
+        this.hp = 100;
+        this.initHP = 100;
+    }
+
+    fire() {
+        if (game.time.now > this.nextFire && bullets.countDead() > 0)
+        {
+            this.nextFire = game.time.now + this.fireRate;
+            super.fire(0, true);
+            super.fire(90, true);
+            super.fire(180, true);
+            super.fire(270, true);
+        }
+    }
+
+    update() {
+        super.update();
         this.fire();
     }
 }
