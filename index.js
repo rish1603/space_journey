@@ -37,7 +37,7 @@ if (getParameterByName("theme") == "shit") {
 
 var gameMap = [
     {
-        'horizontal': 2,
+        'horizontal': 2
     },
     {
         'horizontal': 2,
@@ -415,6 +415,8 @@ class FourWay extends Enemy {
 
         this.sprite.y += this.ydirec;
         this.sprite.x += this.xdirec;
+
+        this.sprite.rotation += 0.01;
 
         if (this.sprite.x > game.width-this.sprite.width/2 || this.sprite.x < this.sprite.width/2) {
             this.xdirec = -this.xdirec;
