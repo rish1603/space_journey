@@ -231,21 +231,17 @@ class Meteor extends Enemy {
         this.sprite.loadTexture('meteor');
 
         this.hp = 150;
-        this.sprite.body.allowRotation = true;
-        this.sprite.rotation = 10;
         this.initHP = 150;
     }
 
     update() {
         super.update();
-        this.sprite.angularVelocity = 10
         this.sprite.y +=  3
     }
-
 }
 
 function getRand(min, max) {
-      return Math.random() * (max - min) + min;
+    return Math.random() * (max - min) + min;
 }
 
 var gameOverState = {
