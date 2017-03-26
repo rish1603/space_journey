@@ -2,6 +2,7 @@ var game = new Phaser.Game(600,800);
 //declarations for sprites/objects/some fields
 var player;
 var meteor
+var explosions;
 var ezEnemy;
 var bullets;
 var playerFireRate = 100;
@@ -18,6 +19,7 @@ var mainState = {
         game.load.image('meteor', 'assets/PNG/Sprites/Meteors/spaceMeteors_001.png'); 
         game.load.image('ezEnemy', 'assets/PNG/Sprites/Ships/spaceship.png'); 
         game.load.image('bullet', 'assets/PNG/Sprites/Missiles/spaceMissiles_012.png'); 
+        game.load.spritesheet('kaboom', 'assets/explode.png',128,128);
         game.load.image('background', 'assets/background.png');
     },
 
@@ -49,6 +51,10 @@ var mainState = {
         bullets.setAll('checkWorldBounds', true);
         bullets.setAll('outOfBoundsKill', true);
 
+        //explosion grouping
+        explosions = game.add.group();
+        explosions.createMultiple(30, 'kaboom');
+        // explosions.forEach(setupEnemy, this);
 
         this.cursor = game.input.keyboard.createCursorKeys(); //cursor object to detect key presses
 
@@ -74,8 +80,8 @@ var mainState = {
             var collFunc = this.enemyCollision;
             game.physics.arcade.overlap(bullets, enemy.sprite, collFunc);
             game.physics.arcade.overlap(player.sprite, enemy.sprite, function() {
-            player.sprite.kill();
-            game.state.start('gg'); //ends game if user crashes into enemy
+                player.sprite.kill();
+                game.state.start('gg'); //ends game if user crashes into enemy
             });
 
             // Run updates
@@ -97,13 +103,20 @@ var mainState = {
         }
 
         if ( enemyObj.hp <= 0) {
+             // enemyObj.sprite.anchor.x = 0.5;
+             // enemyObj.sprite.anchor.y = 0.5;
+            var explosion = explosions.getFirstExists(false);
+            explosion.reset(enemyObj.sprite.x, enemyObj.sprite.y);
+            explosion.play('kaboom', 30, false, true);
             enemyObj.die();
+
         }
 
         var health_per = 100 * enemyObj.hp / enemyObj.initHP;
         enemyObj.healthBar.setPercent(health_per);
         bullet.kill();
     }
+
 };
 
 class Ship {
@@ -113,6 +126,7 @@ class Ship {
         this.sprite.scale.setTo(0.5, 0.5);
         game.physics.enable(this.sprite, Phaser.Physics.ARCADE);
         this.sprite.anchor.setTo(0.5,0.5);
+        this.sprite.animations.add('kaboom');
         this.sprite.rotation = Math.PI / 2;
         this.fireRate = 300;
 
@@ -265,5 +279,4 @@ var gameOverState = {
 };
 
 game.state.add('main', mainState);
-game.state.add('gg', gameOverState);
-game.state.start('main');
+game.state.add('gg', gameOverState); game.state.start('main');
