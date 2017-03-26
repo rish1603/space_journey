@@ -481,7 +481,7 @@ function getRand(min, max) {
 
 var gameOverState = {
     create: function() {
-        label = game.add.text(game.world.width / 2, game.world.height/2, 'GG \n Press Space to Restart',
+        label = game.add.text(game.world.width / 2, game.world.height/2, 'GG\nYou got ' + numKills + ' kills\n Press Space to Restart',
             {
                 font: '22px Arial',
                 fill: '#fff',
