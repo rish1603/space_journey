@@ -29,7 +29,8 @@ var mainState = {
         game.add.tileSprite(0, 0, game.width, game.height, 'background');
 
         // Create the player
-        player = game.add.sprite(300, 700, 'player');player.scale.setTo(0.5,0.5); //add and rescale
+        player = game.add.sprite(300, 700, 'player');
+        player.scale.setTo(0.5,0.5); //add and rescale
         player.anchor.setTo(0.5,0.5);
         game.physics.enable(player, Phaser.Physics.ARCADE);
         player.body.allowRotation = false;
@@ -37,7 +38,6 @@ var mainState = {
 
         // Create an enemy
         enemies.push(new horizontalAIEnemy());
-        enemies.push(new spawnMeteor());
 
         //bullet creation
         bullets = game.add.group();
@@ -141,13 +141,13 @@ class enemy {
         this.scale = 0.5;
 
         this.healthBar = new HealthBar(game, {
-                    x: 0,
-                    y: 0,
-                    width: this.sprite.width,
-                    height: 10,
-                    bg: {color: "#BDC3C7"}, // Grey
-                    bar:{color: "#26A65B"}
-                });
+            x: 0,
+            y: 0,
+            width: this.sprite.width,
+            height: 10,
+            bg: {color: "#BDC3C7"}, // Grey
+            bar:{color: "#26A65B"}
+        });
 
         var sprite = this.sprite;
         this.healthBar.getX = () => { return sprite.x }
@@ -187,15 +187,24 @@ class horizontalAIEnemy extends enemy {
 class spawnMeteor extends enemy {
     constructor() {
         super();
-        this.sprite = game.add.sprite(0, 0, 'meteor');
+        this.sprite = game.add.sprite(getRand(0,600), 0, 'meteor');
         this.hp = 150;
+        this.sprite.body.allowRotation = true;
+        this.sprite.rotation = 10;
         this.initHP = 150;
+
     }
-update() {
-    super.update();
-    this.sprite.x += 2;
-    this.sprite.y += 2;
+    update() {
+        super.update();
+        this.sprite.angularVelocity = 10
+        this.sprite.y +=  3
+    }
 }
+
+setInterval(function() {enemies.push(new spawnMeteor())}, 7000) //spawn meteor every 7 seconds
+
+function getRand(min, max) {
+      return Math.random() * (max - min) + min;
 }
 
 var gameOverState = {
