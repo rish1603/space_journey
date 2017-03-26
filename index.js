@@ -221,8 +221,10 @@ var mainState = {
              // enemyObj.sprite.anchor.x = 0.5;
              // enemyObj.sprite.anchor.y = 0.5;
             var explosion = explosions.getFirstExists(false);
+            explosion.anchor.setTo(0.5,0.5);
             explosion.reset(enemyObj.sprite.x, enemyObj.sprite.y);
-            explosion.play('kaboom', 30, false, true);
+            explosion.animations.add('anim');
+            explosion.play('anim', 30, false, true);
             enemyObj.die();
 
         }
