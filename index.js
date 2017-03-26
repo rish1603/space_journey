@@ -2,13 +2,18 @@ var game = new Phaser.Game(600,800);
 //declarations for sprites/objects/some fields
 var player;
 var meteor
-var ezEnemy;
 var bullets;
 var playerFireRate = 100;
 var bulletDamage = 20;
 var enemies = Array();
-
+var scoreText;
 var currentLevel = -1;
+var numKills = 0;
+
+var explosionSound;
+var shootingSound;
+
+var theme = "Sprites";
 
 var gameMap = [
     {
@@ -48,11 +53,13 @@ var mainState = {
 
     preload: function() { //for loading assets etc
         //load the main rocket image and save as 'player'
-        game.load.image('player', 'assets/PNG/Sprites/Ships/spaceship.png'); 
+        game.load.image('player', 'assets/PNG/' + theme + '/Ships/spaceship.png'); 
         game.load.image('meteor', 'assets/PNG/Sprites/Meteors/spaceMeteors_001.png'); 
-        game.load.image('ezEnemy', 'assets/PNG/Sprites/Ships/spaceship.png'); 
         game.load.image('bullet', 'assets/PNG/Sprites/Missiles/spaceMissiles_012.png'); 
         game.load.image('background', 'assets/background.png');
+
+        game.load.audio('explosion', 'assets/sounds/explosion.wav');
+        game.load.audio('gunfire', 'assets/sounds/shooting.wav');
     },
 
     create: function() {
@@ -61,6 +68,10 @@ var mainState = {
         game.world.setBounds(0, 0, game.width, game.height);
 
         game.add.tileSprite(0, 0, game.width, game.height, 'background');
+        
+        // Add the sound effects
+        explosion = game.add.audio('explosion');
+        gunfire = game.add.audio('gunfire');
 
         // Create the player
         player = new Player();
@@ -75,6 +86,14 @@ var mainState = {
         bullets.createMultiple(100, 'bullet');
         bullets.setAll('checkWorldBounds', true);
         bullets.setAll('outOfBoundsKill', true);
+
+        scoreText = game.add.text(game.world.width / 2 - 40, game.world.height - 30, 'Score: 0',
+            {
+                font: '22px Arial',
+                fill: '#fff',
+                align: 'center'
+            }
+        );
 
 
         this.cursor = game.input.keyboard.createCursorKeys(); //cursor object to detect key presses
@@ -118,6 +137,7 @@ var mainState = {
             }
         })
 
+        //update score text
     },
 
     enemyCollision: function(enemy, bullet) {
@@ -180,7 +200,8 @@ class Ship {
             bullet.owner = this;
             bullet.reset(this.sprite.x, this.sprite.y);
             bullet.rotation = this.sprite.rotation + Math.PI / 2;
-            game.physics.arcade.velocityFromAngle(bullet.angle - 90, 400, bullet.body.velocity)
+            game.physics.arcade.velocityFromAngle(bullet.angle - 90, 400, bullet.body.velocity);
+            gunfire.play();
         }
     }
 
@@ -192,6 +213,10 @@ class Ship {
         deathTween.onComplete.add(() => {sprite.kill(); healthBar.kill()});
 
         enemies.splice(enemies.indexOf(this), 1);
+        numKills++;
+        scoreText.text = "Score: " + numKills;
+
+        explosion.play();
     }
 
 }
@@ -246,6 +271,7 @@ class HorizontalAIEnemy extends Enemy {
     constructor() {
         super();
         this.sprite.x = this.sprite.width/2;
+        this.sprite.scale = {x: 0.3, y: 0.3};
         this.direction = 2;
         this.lastFire = game.time;
     }
@@ -300,6 +326,7 @@ var gameOverState = {
         if(this.spacebar.isDown){
             enemies = [];
             currentLevel = -1;
+            numKills = 0;
             game.state.start('main');
         }
     }
