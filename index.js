@@ -37,7 +37,7 @@ if (getParameterByName("theme") == "shit") {
 
 var gameMap = [
     {
-        'horizontal': 2,
+        'horizontal': 2
     },
     {
         'horizontal': 2,
@@ -88,7 +88,7 @@ var mainState = {
     preload: function() { //for loading assets etc
         //load the main rocket image and save as 'player'
         game.load.image('player', 'assets/PNG/' + theme + '/Ships/spaceship.png'); 
-        game.load.image('OGplayer', 'assets/PNG/' + theme + '/Ships/ogship.png'); 
+        game.load.image('OGplayer', 'assets/PNG/Shit/Ships/ogship.png'); 
         game.load.image('4way', 'assets/PNG/' + theme + '/Ships/4way.png'); 
         game.load.image('boss', 'assets/PNG/Shit/Ships/boss.png'); 
         game.load.image('meteor', 'assets/PNG/Sprites/Meteors/spaceMeteors_001.png'); 
@@ -415,6 +415,8 @@ class FourWay extends Enemy {
 
         this.sprite.y += this.ydirec;
         this.sprite.x += this.xdirec;
+
+        this.sprite.rotation += 0.01;
 
         if (this.sprite.x > game.width-this.sprite.width/2 || this.sprite.x < this.sprite.width/2) {
             this.xdirec = -this.xdirec;
